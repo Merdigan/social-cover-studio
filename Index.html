@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Конструктор обложек VK</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #eef3e6;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            padding: 30px 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2c6e3c;
+            color: white;
+            padding: 20px 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .workspace {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 30px;
+        }
+        .controls {
+            flex: 1;
+            min-width: 280px;
+            background: #f9faf5;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .control-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e8dc;
+            padding-bottom: 16px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e2c;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5c0;
+            border-radius: 20px;
+            font-size: 14px;
+            background: white;
+        }
+        .color-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .color-row input {
+            width: 60px;
+            padding: 4px;
+        }
+        button {
+            background: #2c6e3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        button:hover {
+            background: #1e5530;
+        }
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .preset-btn {
+            background: #e0e8dc;
+            color: #2c6e3c;
+            font-size: 12px;
+            padding: 5px 12px;
+        }
+        .position-slider {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .position-slider input {
+            width: 80px;
+        }
+        .previews {
+            flex: 2;
+            min-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        .preview-card {
+            background: #f5f7f0;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+        .preview-card h3 {
+            margin-bottom: 12px;
+            font-size: 20px;
+            color: #2c6e3c;
+        }
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: #e0ecd0;
+        }
+        .safe-zone {
+            position: absolute;
+            border: 2px dashed #ffaa44;
+            background: rgba(255, 170, 68, 0.15);
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+        .download-btn {
+            background: #4a6e3a;
+            margin-top: 15px;
+            display: inline-block;
+        }
+        .note {
+            font-size: 12px;
+            color: #7c8f7a;
+            margin-top: 8px;
+        }
+        @media (max-width: 1000px) {
+            .workspace { flex-direction: column; }
+            .previews { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">🎨 Конструктор обложек VK</div>
+    <div class="workspace">
+        <div class="controls">
+            <div class="control-group">
+                <label>📌 Пресеты</label>
+                <div class="preset-buttons">
+                    <button class="preset-btn" data-preset="business">💼 Бизнес</button>
+                    <button class="preset-btn" data-preset="education">📚 Образование</button>
+                    <button class="preset-btn" data-preset="food">🍕 Еда</button>
+                    <button class="preset-btn" data-preset="travel">✈️ Путешествия</button>
+                    <button class="preset-btn" data-preset="tech">⚙️ Технологии</button>
+                    <button class="preset-btn" data-preset="eco">🌿 Эко/Сад</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>📝 Текст</label>
+                <input type="text" id="title" value="Ваше сообщество" placeholder="Заголовок">
+                <input type="text" id="subtitle" value="Расскажите о главном" placeholder="Подзаголовок" style="margin-top: 8px;">
+                <input type="text" id="btnText" value="Подробнее" placeholder="Текст кнопки" style="margin-top: 8px;">
+            </div>
+            <div class="control-group">
+                <label>🎨 Фон (градиент)</label>
+                <div class="color-row">
+                    <input type="color" id="bgStart" value="#2c6e3c">
+                    <input type="color" id="bgEnd" value="#1e5a2f">
+                </div>
+            </div>
+            <div class="control-group">
+                <label>🖼️ Логотип (PNG/JPG)</label>
+                <input type="file" id="logoUpload" accept="image/*">
+                <div class="position-slider" style="margin-top: 8px;">
+                    <span>X:</span>
+                    <input type="range" id="logoX" min="0" max="100" value="5">
+                    <span>Y:</span>
+                    <input type="range" id="logoY" min="0" max="100" value="5">
+                    <span>Размер:</span>
+                    <input type="range" id="logoSize" min="30" max="200" value="80">
+                </div>
+            </div>
+            <div class="control-group">
+                <label>🔤 Шрифт заголовка</label>
+                <select id="titleFont">
+                    <option value="Inter">Inter (современный)</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Georgia">Georgia (с засечками)</option>
+                </select>
+                <label style="margin-top: 8px;">Шрифт подзаголовка</label>
+                <select id="subtitleFont">
+                    <option value="Inter">Inter</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Georgia">Georgia</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>📏 Позиция заголовка (Y, % от высоты)</label>
+                <input type="range" id="titleY" min="10" max="80" value="35" step="1">
+                <label>Позиция подзаголовка (Y, %)</label>
+                <input type="range" id="subtitleY" min="20" max="90" value="52" step="1">
+                <label>Позиция кнопки (Y, %)</label>
+                <input type="range" id="btnY" min="40" max="95" value="68" step="1">
+            </div>
+            <div class="control-group">
+                <label>🎛️ Стиль кнопки</label>
+                <select id="btnStyle">
+                    <option value="white">Белая с цветным текстом</option>
+                    <option value="transparent">Прозрачная с обводкой</option>
+                    <option value="green">Зелёная (в тон фона)</option>
+                </select>
+            </div>
+            <button id="refreshBtn">🔄 Обновить превью</button>
+        </div>
+
+        <div class="previews">
+            <div class="preview-card">
+                <h3>🖥️ Главная обложка (1920×768)</h3>
+                <div class="canvas-container" id="mainContainer">
+                    <canvas id="mainCanvas" width="1920" height="768" style="width:100%; height:auto;"></canvas>
+                    <div id="safeZone" class="safe-zone"></div>
+                </div>
+                <button id="downloadMain" class="download-btn">📥 Скачать PNG (главная)</button>
+                <div class="note">⚠️ Жёлтая область — безопасная зона для мобильных. Важные элементы должны быть внутри.</div>
+            </div>
+            <div class="preview-card">
+                <h3>📱 Живая обложка (1080×1920) — только мобильные</h3>
+                <div class="canvas-container">
+                    <canvas id="liveCanvas" width="1080" height="1920" style="width:auto; height:300px; max-height:300px;"></canvas>
+                </div>
+                <button id="downloadLive" class="download-btn">📥 Скачать PNG (живая)</button>
+                <div class="note">Вертикальный формат для мобильных. Отображается в приложении VK.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const titleInput = document.getElementById('title');
+    const subtitleInput = document.getElementById('subtitle');
+    const btnTextInput = document.getElementById('btnText');
+    const bgStart = document.getElementById('bgStart');
+    const bgEnd = document.getElementById('bgEnd');
+    const titleFont = document.getElementById('titleFont');
+    const subtitleFont = document.getElementById('subtitleFont');
+    const titleY = document.getElementById('titleY');
+    const subtitleY = document.getElementById('subtitleY');
+    const btnY = document.getElementById('btnY');
+    const btnStyle = document.getElementById('btnStyle');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const downloadMain = document.getElementById('downloadMain');
+    const downloadLive = document.getElementById('downloadLive');
+    const mainCanvas = document.getElementById('mainCanvas');
+    const liveCanvas = document.getElementById('liveCanvas');
+    const safeZoneDiv = document.getElementById('safeZone');
+    
+    let logoImage = null;
+    const logoUpload = document.getElementById('logoUpload');
+    const logoX = document.getElementById('logoX');
+    const logoY = document.getElementById('logoY');
+    const logoSize = document.getElementById('logoSize');
+    
+    function drawCover(canvas, width, height, isLive = false) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = width;
+        canvas.height = height;
+        
+        const grad = ctx.createLinearGradient(0, 0, isLive ? 0 : width, isLive ? height : height);
+        grad.addColorStop(0, bgStart.value);
+        grad.addColorStop(1, bgEnd.value);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+        
+        if (logoImage) {
+            const size = parseInt(logoSize.value);
+            const xPercent = parseInt(logoX.value);
+            const yPercent = parseInt(logoY.value);
+            const x = (xPercent / 100) * width - size/2;
+            const y = (yPercent / 100) * height - size/2;
+            ctx.drawImage(logoImage, x, y, size, size);
+        }
+        
+        ctx.font = `bold ${Math.floor(height * 0.1)}px ${titleFont.value}`;
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        const titlePosY = height * (parseInt(titleY.value) / 100);
+        ctx.fillText(titleInput.value, width/2, titlePosY);
+        
+        ctx.font = `${Math.floor(height * 0.045)}px ${subtitleFont.value}`;
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        const subtitlePosY = height * (parseInt(subtitleY.value) / 100);
+        ctx.fillText(subtitleInput.value, width/2, subtitlePosY);
+        
+        const btnWidth = Math.min(500, width * 0.35);
+        const btnHeight = Math.floor(height * 0.09);
+        const btnX = width/2 - btnWidth/2;
+        const btnPosY = height * (parseInt(btnY.value) / 100);
+        
+        const style = btnStyle.value;
+        if (style === 'white') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(btnX, btnPosY, btnWidth, btnHeight);
+            ctx.fillStyle = bgEnd.value;
+        } else if (style === 'transparent') {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(btnX, btnPosY, btnWidth, btnHeight);
+            ctx.fillStyle = '#ffffff';
+        } else {
+            ctx.fillStyle = '#2c6e3c';
+            ctx.fillRect(btnX, btnPosY, btnWidth, btnHeight);
+            ctx.fillStyle = '#ffffff';
+        }
+        ctx.font = `bold ${Math.floor(btnHeight * 0.45)}px Inter`;
+        ctx.fillText(btnTextInput.value, width/2, btnPosY + btnHeight/1.7);
+    }
+    
+    function updateAll() {
+        drawCover(mainCanvas, 1920, 768, false);
+        drawCover(liveCanvas, 1080, 1920, true);
+        updateSafeZone();
+    }
+    
+    function updateSafeZone() {
+        const container = document.getElementById('mainContainer');
+        if (!container) return;
+        const canvasRect = mainCanvas.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        if (canvasRect.width === 0) return;
+        const scale = canvasRect.width / 1920;
+        const safeW = 690 * scale;
+        const safeH = 540 * scale;
+        const safeLeft = (canvasRect.left - containerRect.left) + (1920/2 - 690/2) * scale;
+        const safeTop = (canvasRect.top - containerRect.top) + (768/2 - 540/2) * scale;
+        safeZoneDiv.style.position = 'absolute';
+        safeZoneDiv.style.left = safeLeft + 'px';
+        safeZoneDiv.style.top = safeTop + 'px';
+        safeZoneDiv.style.width = safeW + 'px';
+        safeZoneDiv.style.height = safeH + 'px';
+        safeZoneDiv.style.border = '2px dashed #ffaa44';
+        safeZoneDiv.style.backgroundColor = 'rgba(255, 170, 68, 0.15)';
+        safeZoneDiv.style.pointerEvents = 'none';
+    }
+    
+    function downloadCanvas(canvas, filename) {
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+    
+    logoUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                logoImage = img;
+                updateAll();
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    function applyPreset(preset) {
+        switch(preset) {
+            case 'business':
+                bgStart.value = '#1e3c72'; bgEnd.value = '#2a5298';
+                titleInput.value = 'Ваш бизнес'; subtitleInput.value = 'Достигайте большего';
+                btnTextInput.value = 'Стать клиентом';
+                break;
+            case 'education':
+                bgStart.value = '#ffb347'; bgEnd.value = '#ff8c00';
+                titleInput.value = 'Образовательный центр'; subtitleInput.value = 'Знания для успеха';
+                btnTextInput.value = 'Записаться';
+                break;
+            case 'food':
+                bgStart.value = '#e67e22'; bgEnd.value = '#d35400';
+                titleInput.value = 'Вкусный уголок'; subtitleInput.value = 'Лучшие рецепты';
+                btnTextInput.value = 'Меню';
+                break;
+            case 'travel':
+                bgStart.value = '#3498db'; bgEnd.value = '#2980b9';
+                titleInput.value = 'Путешествуйте'; subtitleInput.value = 'Откройте мир';
+                btnTextInput.value = 'Выбрать тур';
+                break;
+            case 'tech':
+                bgStart.value = '#2c3e6e'; bgEnd.value = '#4a6e9e';
+                titleInput.value = 'Технологии будущего'; subtitleInput.value = 'Инновации для вас';
+                btnTextInput.value = 'Подробнее';
+                break;
+            case 'eco':
+                bgStart.value = '#1e4a2f'; bgEnd.value = '#3b8a4c';
+                titleInput.value = 'Эко-пространство'; subtitleInput.value = 'Живите в гармонии';
+                btnTextInput.value = 'Узнать больше';
+                break;
+            default: break;
+        }
+        updateAll();
+    }
+    
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+    });
+    
+    refreshBtn.addEventListener('click', updateAll);
+    downloadMain.addEventListener('click', () => downloadCanvas(mainCanvas, 'vk_main_cover.png'));
+    downloadLive.addEventListener('click', () => downloadCanvas(liveCanvas, 'vk_live_cover.png'));
+    
+    window.addEventListener('resize', updateSafeZone);
+    const resizeObserver = new ResizeObserver(() => updateSafeZone());
+    resizeObserver.observe(document.getElementById('mainContainer'));
+    
+    updateAll();
+</script>
+</body>
+</html>
